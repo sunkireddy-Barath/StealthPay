@@ -4,7 +4,7 @@ StealthPay is a production-grade financial operating system designed for busines
 
 ---
 
-## 🏗️ System Architecture
+## 🏗️ System  Architecture
 
 StealthPay utilizes a high-performance full-stack architecture with a specialized privacy layer.
 
