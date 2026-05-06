@@ -1,10 +1,24 @@
-# StealthPay: Private Business Finance OS
+# 🛡️ StealthPay: The Private Business Finance OS
 
-StealthPay is a production-grade financial operating system designed for businesses that require absolute privacy on the Solana blockchain. By integrating the **Umbra Protocol SDK**, StealthPay ensures that sensitive financial activities—such as payroll, invoicing, and vendor payments—are completely confidential by default, while remaining legally compliant through selective disclosure.
+StealthPay is a premium, production-grade financial operating system built for the Solana ecosystem. It solves the critical challenge of **on-chain privacy** for businesses, allowing them to manage payroll, vendor payments, and invoicing with absolute confidentiality while maintaining institutional-grade compliance.
+
+By leveraging the **Umbra Protocol SDK**, StealthPay ensures that sensitive financial data—such as employee salaries and corporate treasury movements—remains invisible to public blockchain observers.
 
 ---
 
-## 🏗️ System  Architecture
+## 🚀 Why StealthPay? (Benefits)
+
+In a standard transparent ledger, every business transaction is a public record. StealthPay changes this by providing:
+
+*   **Absolute Payroll Privacy**: Employees can receive their salaries without their colleagues or competitors knowing their compensation details.
+*   **Confidential Vendor Management**: Protect your supply chain and pricing by masking payments to vendors and partners.
+*   **Institutional Compliance**: Every private transaction generates a unique **Viewing Key**. Share this key with auditors or tax authorities to prove payment without revealing your entire wallet history.
+*   **Premium User Experience**: A high-fidelity "Spatial UI" built with Next.js and Framer Motion, providing a seamless bridge between Web2 ease-of-use and Web3 power.
+*   **Multi-Factor Security**: Mandates a 2-step authentication flow (Solana Wallet + Google OAuth) to ensure only authorized personnel can access the treasury.
+
+---
+
+## 🏗️ System Architecture
 
 StealthPay utilizes a high-performance full-stack architecture with a specialized privacy layer.
 
@@ -46,72 +60,79 @@ graph TD
 
 ---
 
-## 🔐 Privacy & Security Model
+## 📂 Project Structure
 
-StealthPay operates on a "Zero-Knowledge Visibility" principle for external observers while maintaining a "Verified Identity" principle for internal operations.
+### **Backend (`/backend`)**
+- `app/__init__.py`: Application factory and blueprint registration.
+- `app/api/`: RESTful endpoints for authentication, payroll, and invoicing.
+- `app/blockchain/`: Solana interaction logic and RPC management.
+- `app/models/`: SQLAlchemy database models for local synchronization.
+- `app/services/`: Business logic for stealth address generation and Umbra integration.
+- `app/utils/`: Security utilities, JWT handling, and identity verification helpers.
 
-### Transaction Lifecycle Flow
-
-```mermaid
-sequenceDiagram
-    participant U as Business Admin
-    participant W as Solana Wallet
-    participant S as StealthPay Engine
-    participant P as Umbra Protocol
-    participant BC as Solana Blockchain
-    participant R as Employee/Recipient
-
-    U->>S: Initiates Payroll Payment
-    S->>P: Fetch Recipient Public Keys
-    P->>S: Return Public Keys (Spend/View)
-    S->>P: Derive One-Time Stealth Address (S)
-    P->>S: Return Stealth Address (S)
-    S->>W: Request Signature for Transfer to (S)
-    W->>BC: Broadcast Confidential Transaction
-    BC-->>S: Confirmation & TxHash
-    S->>U: Generate Viewing Key (VK)
-    S->>R: Notification: Payment Received (Private)
-```
+### **Frontend (`/frontend`)**
+- `src/components/`: Reusable UI components (Bento grids, glassmorphism elements).
+- `src/hooks/`: Custom React hooks for wallet state and API fetching.
+- `src/lib/`: Core libraries (Umbra SDK, Supabase client).
+- `src/pages/`: Main application views (Dashboard, Compliance Terminal, Auth).
+- `src/store/`: Zustand state management for global application state.
+- `src/types/`: TypeScript interfaces for unified data structures.
 
 ---
 
-## 🌟 Core Concepts
+## 🛠️ How to Use StealthPay
 
-### 1. Privacy-as-a-Service (PaaS)
-On a public ledger like Solana, every transaction is visible. StealthPay solves this by using **Stealth Addresses**. For every payment, a unique, one-time address is derived from the recipient's public key. Only the recipient (and authorized auditors) can link this address back to their main identity.
+### 1. Secure Onboarding
+Connect your corporate Solana wallet (Phantom/Solflare) and complete the **Google Workspace verification**. This dual-link ensures that the wallet owner is an authorized member of your organization.
 
-### 2. Multi-Factor Identity (MFI)
-Unlike traditional web3 apps that only use a wallet, StealthPay mandates a **Two-Step Authentication** flow:
-- **Cryptographic Identity**: Verified via Solana Wallet signature.
-- **Organizational Identity**: Verified via Google Workspace OAuth.
-This ensures that corporate financial tools are only accessible to authorized personnel.
+### 2. Stealth Setup
+When you add an employee or vendor, StealthPay automatically fetches their public keys and prepares a **Stealth Profile**. This profile is used to derive one-time addresses for every payment you send them.
 
-### 3. Selective Disclosure (Compliance)
-StealthPay balances privacy with regulatory requirements. Every transaction generates a **Viewing Key**. This key allows the holder to decrypt and view transaction details without exposing the user's entire history or private keys.
+### 3. Executing Payroll
+Upload your payroll CSV or select employees from the dashboard. StealthPay will:
+1.  Derive unique stealth addresses for each recipient.
+2.  Encrypt payment metadata.
+3.  Execute a single-click batch transaction from your treasury.
+
+### 4. Invoicing & Billing
+Create encrypted invoices for your clients. When a client pays a StealthPay invoice, the funds are routed through the Umbra protocol, ensuring that your business's total revenue remains private from on-chain scrapers.
+
+### 5. Compliance Audit
+Need to prove a payment to the IRS or an auditor? Navigate to the **Compliance Terminal**, select the transaction, and generate a temporary **Viewing Key (VK)**. The auditor can use this key to verify the transaction details on the blockchain without accessing your private keys.
+
+---
+
+## 🔐 Core Privacy Mechanism: Stealth Addresses
+
+StealthPay does not just "hide" transactions; it makes them **unlinkable**.
+
+1.  **Generation**: For every transaction, the sender generates a new, one-time address (the "Stealth Address") using the recipient's public spend and view keys.
+2.  **Transmission**: Funds are sent to this address. To an observer, it looks like a random, new wallet is receiving funds.
+3.  **Discovery**: The recipient's wallet "scans" the blockchain using their private view key to identify transactions belonging to them.
+4.  **Claiming**: Only the recipient can generate the private key required to move funds out of the stealth address.
 
 ---
 
 ## 📊 Feature Comparison
 
-| Feature | Standard Wallet | StealthPay OS |
+| Feature | Standard Wallets | StealthPay OS |
 | :--- | :---: | :---: |
 | **Transaction Visibility** | Public (Explorer) | Encrypted (Stealth) |
 | **Identity Linkage** | Wallet Address | Multi-Factor (Google + Wallet) |
 | **Payroll Privacy** | None (All salaries public) | Absolute (Private Transfers) |
 | **Invoicing** | Manual Tracking | Automated & Encrypted |
 | **Auditability** | Full Public Exposure | Selective via Viewing Keys |
-| **Compliance** | Hard to track | Native Decryption Terminal |
+| **Compliance** | Manual/Difficult | Native Decryption Terminal |
 
 ---
 
-## 🛠️ Implementation Structure
+## 🛠️ Tech Stack
 
-### **Directory Map**
-- `frontend/src/lib/umbra.ts`: Core privacy logic for stealth address generation.
-- `frontend/src/store/index.ts`: Centralized state management for all modules.
-- `frontend/src/pages/AuthPage.tsx`: High-security 2-step verification entry.
-- `frontend/src/pages/CompliancePage.tsx`: Selective disclosure and decryption terminal.
-- `backend/app.py`: Scalable API gateway for database synchronization.
+*   **Frontend**: React 18, Tailwind CSS, Framer Motion, Zustand.
+*   **Web3**: @solana/web3.js, @umbra-privacy/sdk.
+*   **Auth**: Firebase (Google OAuth), Solana Wallet Standard.
+*   **Backend**: Flask (Python), Supabase (PostgreSQL).
+*   **Privacy**: Umbra v4 Stealth Protocol.
 
 ---
 
@@ -121,27 +142,6 @@ StealthPay balances privacy with regulatory requirements. Every transaction gene
 - [ ] **Multi-Chain Privacy**: Extending stealth payments to Ethereum and Polygon.
 - [ ] **Fiat On/Off Ramp**: Private integration with Circle (USDC) for direct bank transfers.
 - [ ] **Hardware Wallet Support**: Ledger/Trezor integration for corporate treasury.
-
----
-
-## 📡 Current Network Status
-
-The application is currently configured for **Solana Devnet**.
-
-- **Network**: `devnet`
-- **RPC Endpoint**: `https://api.devnet.solana.com`
-- **Privacy Standard**: Umbra v4 Stealth Protocol
-- **MFA Status**: Enabled (Mandatory)
-
----
-
-## 🛠️ Tech Stack
-
-- **UI**: React 18, Tailwind CSS, Framer Motion, Lucide Icons.
-- **Web3**: @solana/web3.js, @umbra-privacy/sdk.
-- **Auth**: Firebase (Google OAuth), Solana Wallet Standard.
-- **State**: Zustand (with Persist middleware).
-- **Backend**: Flask (Python), Supabase (PostgreSQL).
 
 ---
 
