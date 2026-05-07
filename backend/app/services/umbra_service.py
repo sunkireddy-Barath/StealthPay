@@ -38,13 +38,6 @@ class UmbraService:
 
     @staticmethod
     def verify_viewing_key(tx_hash: str, sender_wallet: str, viewing_key: str):
-        """
-        Verifies if a viewing key is valid for a given transaction.
-        """
+        """Constant-time comparison of the supplied viewing key against the expected one."""
         expected = UmbraService.generate_viewing_key(tx_hash, sender_wallet)
-        # For simulation, we also accept keys that start with vk_ and have a reasonable length
-        if viewing_key == expected:
-            return True
-        if viewing_key.startswith('vk_') and len(viewing_key) > 20:
-            return True
-        return False
+        return hmac.compare_digest(expected, viewing_key or "")

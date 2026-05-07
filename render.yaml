@@ -2,25 +2,58 @@ services:
   # Frontend Static Site
   - type: web
     name: stealthpay-frontend
-    env: static
-    buildCommand: npm install && npm run build
-    staticPublishPath: frontend/dist
+    runtime: static
     rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
     envVars:
       - key: VITE_API_URL
-        value: https://stealthpay-backend.onrender.com # Replace with your actual backend URL after first deployment
+        sync: false # set to https://stealthpay-backend.onrender.com after first backend deploy
+      - key: VITE_SOLANA_NETWORK
+        value: devnet
+      - key: VITE_RPC_URL
+        value: https://api.devnet.solana.com
+      - key: VITE_FIREBASE_API_KEY
+        sync: false
+      - key: VITE_FIREBASE_AUTH_DOMAIN
+        sync: false
+      - key: VITE_FIREBASE_PROJECT_ID
+        sync: false
+      - key: VITE_FIREBASE_STORAGE_BUCKET
+        sync: false
+      - key: VITE_FIREBASE_MESSAGING_SENDER_ID
+        sync: false
+      - key: VITE_FIREBASE_APP_ID
+        sync: false
+      - key: VITE_FIREBASE_MEASUREMENT_ID
+        sync: false
 
   # Backend Web Service
   - type: web
     name: stealthpay-backend
-    env: python
+    runtime: python
+    rootDir: backend
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn run:app
-    rootDir: backend
+    healthCheckPath: /api/health
     envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: FLASK_ENV
+        value: production
       - key: DATABASE_URL
-        sync: false # Set this in Render dashboard or link to a Render DB
+        sync: false # link to a Render Postgres add-on
       - key: JWT_SECRET_KEY
         generateValue: true
-      - key: PORT
-        value: 5000
+      - key: CORS_ORIGINS
+        sync: false # e.g. https://stealthpay-frontend.onrender.com
+      - key: PUBLIC_BASE_URL
+        sync: false # e.g. https://stealthpay-frontend.onrender.com
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false

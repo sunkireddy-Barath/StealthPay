@@ -1,9 +1,16 @@
-from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
-from ..models.models import db, Invoice, User
+import os
 import uuid
 from datetime import datetime
+
+from flask import Blueprint, jsonify, request
+from flask_jwt_extended import get_jwt_identity, jwt_required
+
+from ..models.models import Invoice, db
 from ..utils.supabase_sync import SupabaseSync
+
+
+def _public_base_url():
+    return os.getenv('PUBLIC_BASE_URL', '').rstrip('/')
 
 invoices_bp = Blueprint('invoices', __name__)
 
@@ -32,7 +39,8 @@ def create_invoice():
     data = request.get_json()
     
     invoice_number = f"INV-{datetime.now().year}-{uuid.uuid4().hex[:4].upper()}"
-    payment_link = f"https://stealthpay.io/pay/{invoice_number.lower()}"
+    base = _public_base_url()
+    payment_link = f"{base}/pay/{invoice_number.lower()}" if base else f"/pay/{invoice_number.lower()}"
     
     invoice = Invoice(
         creator_id=user_id,

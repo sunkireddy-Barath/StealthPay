@@ -1,11 +1,17 @@
-from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
-from ..models.models import db, PaymentLink, User
-from ..services.transaction_service import TransactionService
-import uuid
-from datetime import datetime
 import os
+from datetime import datetime
+
+from flask import Blueprint, jsonify, request
+from flask_jwt_extended import get_jwt_identity, jwt_required
+
+from ..models.models import PaymentLink, User, db
+from ..services.transaction_service import TransactionService
 from ..utils.supabase_sync import SupabaseSync
+
+
+def _link_url(link_id: str) -> str:
+    base = os.getenv('PUBLIC_BASE_URL', '').rstrip('/')
+    return f"{base}/pay/{link_id}" if base else f"/pay/{link_id}"
 
 payment_links_bp = Blueprint('payment_links', __name__)
 
@@ -24,7 +30,7 @@ def get_links():
         'created_at': l.created_at.isoformat(),
         'claimed_at': l.claimed_at.isoformat() if l.claimed_at else None,
         'claimed_by': l.claimed_by,
-        'link': f"https://stealthpay.io/pay/{l.id}"
+        'link': _link_url(l.id)
     } for l in links]), 200
     
 @payment_links_bp.route('/<id>/info', methods=['GET'])
@@ -68,7 +74,7 @@ def create_link():
     return jsonify({
         'message': 'Payment link generated',
         'id': link.id,
-        'link': f"https://stealthpay.io/pay/{link.id}"
+        'link': _link_url(link.id)
     }), 201
 
 @payment_links_bp.route('/<id>/claim', methods=['POST'])

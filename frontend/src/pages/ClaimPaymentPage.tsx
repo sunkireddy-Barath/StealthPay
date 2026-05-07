@@ -7,6 +7,8 @@ import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import { useAppStore } from '../store'
 import { formatAmount } from '../lib/utils'
 
+const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
+
 export default function ClaimPaymentPage() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -28,7 +30,7 @@ export default function ClaimPaymentPage() {
   useEffect(() => {
     const fetchLink = async () => {
       try {
-        const res = await fetch(`/api/payment-links/${id}/info`)
+        const res = await fetch(`${API_BASE}/api/payment-links/${id}/info`)
         if (res.ok) {
           const data = await res.json()
           setLinkData(data)
@@ -49,7 +51,7 @@ export default function ClaimPaymentPage() {
     
     setClaiming(true)
     try {
-      const res = await fetch(`/api/payment-links/${id}/claim`, {
+      const res = await fetch(`${API_BASE}/api/payment-links/${id}/claim`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

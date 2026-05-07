@@ -45,6 +45,9 @@ export default function AuthPage() {
     
     setLoading(true)
     try {
+      if (!auth || !googleProvider) {
+        throw new Error('Google sign-in is not configured for this deployment.')
+      }
       const result = await signInWithPopup(auth, googleProvider)
       setFirebaseUser(result.user)
       addToast({ type: 'success', title: 'Authentication Successful', message: `Welcome back, ${result.user.displayName}` })

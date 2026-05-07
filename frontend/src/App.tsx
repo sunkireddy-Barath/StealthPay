@@ -40,9 +40,19 @@ function PageLoader() {
   )
 }
 
+function resolveNetwork(): WalletAdapterNetwork {
+  const raw = (import.meta.env.VITE_SOLANA_NETWORK || 'devnet').toLowerCase()
+  if (raw === 'mainnet' || raw === 'mainnet-beta') return WalletAdapterNetwork.Mainnet
+  if (raw === 'testnet') return WalletAdapterNetwork.Testnet
+  return WalletAdapterNetwork.Devnet
+}
+
 export default function App() {
-  const network = WalletAdapterNetwork.Devnet
-  const endpoint = useMemo(() => clusterApiUrl(network), [network])
+  const network = useMemo(resolveNetwork, [])
+  const endpoint = useMemo(
+    () => import.meta.env.VITE_RPC_URL || clusterApiUrl(network),
+    [network]
+  )
   
   // By providing an empty array here, the WalletProvider will automatically 
   // detect all wallets that support the Solana Wallet Standard (Phantom, Solflare, etc.)

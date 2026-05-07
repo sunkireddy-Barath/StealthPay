@@ -2,7 +2,8 @@ node_modules/
 dist/
 build/
 .env
-.env.local
+.env.*
+!.env.example
 .DS_Store
 
 # Python
@@ -15,3 +16,11 @@ env/
 instance/
 *.sqlite3
 *.db
+
+# Logs
+*.log
+backend/backend.log
+
+# IDE
+.vscode/
+.idea/

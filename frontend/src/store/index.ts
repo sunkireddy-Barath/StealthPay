@@ -3,6 +3,9 @@ import { persist } from 'zustand/middleware'
 import { UmbraService } from '../lib/umbra'
 import { auth as firebaseAuth } from '../lib/firebase'
 
+const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
+const apiUrl = (path: string) => `${API_BASE}${path}`
+
 interface User {
   id: string
   email: string
@@ -153,15 +156,15 @@ export const useAppStore = create<AppState>()(
       })),
 
       logout: () => {
-        set({ 
-          user: null, 
-          isWalletConnected: false, 
-          isFirebaseAuthenticated: false, 
+        set({
+          user: null,
+          isWalletConnected: false,
+          isFirebaseAuthenticated: false,
           firebaseUser: null,
-          isAuthenticated: false 
+          isAuthenticated: false
         })
         localStorage.removeItem('stealthpay_token')
-        firebaseAuth.signOut().catch(console.error)
+        firebaseAuth?.signOut().catch(console.error)
       },
 
       sidebarCollapsed: false,
@@ -188,7 +191,7 @@ export const useAppStore = create<AppState>()(
         const token = localStorage.getItem('stealthpay_token')
         if (!token) return
         try {
-          const res = await fetch('/api/wallet/balances', {
+          const res = await fetch(apiUrl('/api/wallet/balances'), {
             headers: { 'Authorization': `Bearer ${token}` }
           })
           if (res.ok) {
@@ -202,7 +205,7 @@ export const useAppStore = create<AppState>()(
         const token = localStorage.getItem('stealthpay_token')
         if (!token) return
         try {
-          const res = await fetch('/api/payroll/employees', {
+          const res = await fetch(apiUrl('/api/payroll/employees'), {
             headers: { 'Authorization': `Bearer ${token}` }
           })
           if (res.ok) {
@@ -216,7 +219,7 @@ export const useAppStore = create<AppState>()(
         const token = localStorage.getItem('stealthpay_token')
         if (!token) return
         try {
-          const res = await fetch('/api/transactions', {
+          const res = await fetch(apiUrl('/api/transactions'), {
             headers: { 'Authorization': `Bearer ${token}` }
           })
           if (res.ok) {
@@ -241,7 +244,7 @@ export const useAppStore = create<AppState>()(
 
       decryptTransaction: async (txHash, viewingKey) => {
         const token = localStorage.getItem('stealthpay_token')
-        const res = await fetch('/api/compliance/decrypt', {
+        const res = await fetch(apiUrl('/api/compliance/decrypt'), {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
@@ -254,7 +257,7 @@ export const useAppStore = create<AppState>()(
 
       addEmployee: async (emp) => {
         const token = localStorage.getItem('stealthpay_token')
-        const res = await fetch('/api/payroll/employees', {
+        const res = await fetch(apiUrl('/api/payroll/employees'), {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
@@ -276,7 +279,7 @@ export const useAppStore = create<AppState>()(
 
       removeEmployee: async (id) => {
         const token = localStorage.getItem('stealthpay_token')
-        const res = await fetch(`/api/payroll/employees/${id}`, {
+        const res = await fetch(apiUrl(`/api/payroll/employees/${id}`), {
           method: 'DELETE',
           headers: { 'Authorization': `Bearer ${token}` }
         })
@@ -298,7 +301,7 @@ export const useAppStore = create<AppState>()(
 
             const umbraData = await UmbraService.confidentialTransfer(null, emp.wallet_address, emp.salary, 'USDC')
             
-            const res = await fetch('/api/payroll/run', {
+            const res = await fetch(apiUrl('/api/payroll/run'), {
               method: 'POST',
               headers: { 
                 'Content-Type': 'application/json',
@@ -333,7 +336,7 @@ export const useAppStore = create<AppState>()(
       fetchInvoices: async () => {
         const token = localStorage.getItem('stealthpay_token')
         if (!token) return
-        const res = await fetch('/api/invoices', {
+        const res = await fetch(apiUrl('/api/invoices'), {
           headers: { 'Authorization': `Bearer ${token}` }
         })
         if (res.ok) {
@@ -344,7 +347,7 @@ export const useAppStore = create<AppState>()(
 
       createInvoice: async (inv) => {
         const token = localStorage.getItem('stealthpay_token')
-        const res = await fetch('/api/invoices', {
+        const res = await fetch(apiUrl('/api/invoices'), {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
@@ -367,7 +370,7 @@ export const useAppStore = create<AppState>()(
 
       updateInvoiceStatus: async (id, status) => {
         const token = localStorage.getItem('stealthpay_token')
-        const res = await fetch(`/api/invoices/${id}`, {
+        const res = await fetch(apiUrl(`/api/invoices/${id}`), {
           method: 'PATCH',
           headers: { 
             'Content-Type': 'application/json',
@@ -384,7 +387,7 @@ export const useAppStore = create<AppState>()(
       fetchPaymentLinks: async () => {
         const token = localStorage.getItem('stealthpay_token')
         if (!token) return
-        const res = await fetch('/api/payment-links/', {
+        const res = await fetch(apiUrl('/api/payment-links/'), {
           headers: { 'Authorization': `Bearer ${token}` }
         })
         if (res.ok) {
@@ -405,7 +408,7 @@ export const useAppStore = create<AppState>()(
 
       createPaymentLink: async (link) => {
         const token = localStorage.getItem('stealthpay_token')
-        const res = await fetch('/api/payment-links/', {
+        const res = await fetch(apiUrl('/api/payment-links/'), {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
@@ -426,7 +429,7 @@ export const useAppStore = create<AppState>()(
 
       authenticateWallet: async (address: string) => {
         try {
-          const res = await fetch('/api/auth/wallet-login', {
+          const res = await fetch(apiUrl('/api/auth/wallet-login'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ address }),
