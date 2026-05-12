@@ -1,35 +1,33 @@
-from solana.rpc.api import Client
-from solders.pubkey import Pubkey
+try:
+    from solana.rpc.api import Client as SolanaClient
+    from solders.pubkey import Pubkey
+    _SOLANA_AVAILABLE = True
+except ImportError:
+    _SOLANA_AVAILABLE = False
+
 
 class WalletService:
     RPC_URL = "https://api.devnet.solana.com"
 
     @staticmethod
     def get_balances(wallet_address: str):
-        """
-        Fetches real SOL balance from Solana devnet via RPC.
-        Stablecoin/Umbra amounts are deterministic per-wallet for demo consistency
-        (real SPL token accounts require separate getTokenAccountsByOwner calls).
-        """
         sol_balance = 0.0
         is_live_sol = False
 
-        if wallet_address and wallet_address not in ('', 'System'):
+        if _SOLANA_AVAILABLE and wallet_address and wallet_address not in ('', 'System'):
             try:
-                client = Client(WalletService.RPC_URL)
+                client = SolanaClient(WalletService.RPC_URL)
                 pubkey = Pubkey.from_string(wallet_address)
                 response = client.get_balance(pubkey)
-                sol_balance = response.value / 1_000_000_000  # lamports → SOL
+                sol_balance = response.value / 1_000_000_000
                 is_live_sol = True
             except Exception as e:
                 print(f"[WalletService] RPC balance fetch failed: {e}")
 
-        # Deterministic per-wallet seed for consistent stablecoin display
         seed = sum(ord(c) for c in (wallet_address or "default"))
-
         prices = {"SOL": 145.20, "USDC": 1.00, "USDT": 1.00, "UMBRA": 2.45}
 
-        tokens = [
+        return [
             {
                 "token": "Solana",
                 "symbol": "SOL",
@@ -67,5 +65,3 @@ class WalletService:
                 "isLive": False,
             },
         ]
-
-        return tokens
