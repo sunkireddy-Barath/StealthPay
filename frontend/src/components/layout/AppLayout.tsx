@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useWallet } from '@solana/wallet-adapter-react'
+import { useNavigate } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
 import { ToastContainer } from '../ui/ToastContainer'
@@ -19,14 +20,22 @@ const pageVariants = {
 }
 
 export function AppLayout({ children, pageTitle, pageSubtitle }: AppLayoutProps) {
-  const { sidebarCollapsed, user, setUser } = useAppStore()
+  const { sidebarCollapsed, user, setUser, logout } = useAppStore()
   const { publicKey, connected } = useWallet()
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (connected && publicKey && user && user.walletAddress !== publicKey.toBase58()) {
       setUser({ ...user, walletAddress: publicKey.toBase58() })
     }
   }, [connected, publicKey, user, setUser])
+
+  useEffect(() => {
+    if (!connected) {
+      logout()
+      navigate('/auth', { replace: true })
+    }
+  }, [connected])
 
   return (
     <div className="min-h-screen bg-[#08080F] flex">
