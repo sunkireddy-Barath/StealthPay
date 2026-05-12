@@ -22,7 +22,7 @@ const NAV_ITEMS = [
 ]
 
 export function Sidebar() {
-  const { user, logout } = useAppStore()
+  const { logout } = useAppStore()
   const location = useLocation()
 
   return (
@@ -76,21 +76,6 @@ export function Sidebar() {
           <span className="text-[10px] font-medium tracking-tight leading-none">Logout</span>
         </motion.button>
 
-        {user && (
-          <div className="hidden sm:flex items-center gap-3 ml-2 pl-4 border-l border-white/10">
-            <div className="flex flex-col items-end">
-              <div className="text-[10px] font-bold text-white uppercase tracking-tighter truncate max-w-[120px]">
-                {user.companyName || 'Merchant'}
-              </div>
-              <div className="text-[8px] text-zinc-500 font-mono truncate max-w-[120px]">
-                {user.walletAddress ? `${user.walletAddress.slice(0, 4)}…${user.walletAddress.slice(-4)}` : 'Wallet'}
-              </div>
-            </div>
-            <div className="w-8 h-8 rounded-full bg-violet-600 flex items-center justify-center text-[10px] font-black text-white border border-white/10">
-              <span>{(user.companyName || 'M').charAt(0).toUpperCase()}</span>
-            </div>
-          </div>
-        )}
       </nav>
     </div>
   )
