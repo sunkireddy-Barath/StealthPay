@@ -7,9 +7,7 @@ import {
   Link2,
   Wallet,
   ShieldCheck,
-  LogOut,
 } from 'lucide-react'
-import { useAppStore } from '../../store'
 import { cn } from '../../lib/utils'
 
 const NAV_ITEMS = [
@@ -22,7 +20,6 @@ const NAV_ITEMS = [
 ]
 
 export function Sidebar() {
-  const { logout } = useAppStore()
   const location = useLocation()
 
   return (
@@ -63,18 +60,6 @@ export function Sidebar() {
           )
         })}
 
-        <div className="w-px h-8 bg-white/10 mx-2" />
-
-        <motion.button
-          whileHover={{ y: -4 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={logout}
-          className="flex flex-col items-center justify-center px-2 min-w-[4.5rem] h-14 rounded-xl text-red-400/70 hover:text-red-400 hover:bg-red-500/10 transition-all"
-          title="Logout"
-        >
-          <LogOut className="w-4 h-4 mb-1" />
-          <span className="text-[10px] font-medium tracking-tight leading-none">Logout</span>
-        </motion.button>
 
       </nav>
     </div>
