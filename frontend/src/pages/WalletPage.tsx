@@ -134,6 +134,13 @@ export default function WalletPage() {
             <h3 className="text-sm font-bold text-white uppercase tracking-wider">Transaction History</h3>
             <span className="badge-private shadow-[0_0_15px_rgba(16,185,129,0.2)]"><Lock className="w-3 h-3" /> All encrypted</span>
           </div>
+          {transactions.length === 0 && (
+            <div className="py-14 text-center border border-white/5 rounded-xl bg-black/20">
+              <Lock className="w-8 h-8 text-zinc-700 mx-auto mb-3" />
+              <p className="text-sm text-zinc-500 font-medium">No transactions yet</p>
+              <p className="text-xs text-zinc-600 mt-1">Your encrypted transaction history will appear here.</p>
+            </div>
+          )}
           <div className="divide-y divide-white/5 border border-white/5 rounded-xl overflow-hidden bg-black/20">
             {transactions.map((tx, i) => (
               <motion.div

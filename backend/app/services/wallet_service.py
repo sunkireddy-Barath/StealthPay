@@ -1,29 +1,71 @@
-import random
+from solana.rpc.api import Client
+from solders.pubkey import Pubkey
 
 class WalletService:
+    RPC_URL = "https://api.devnet.solana.com"
+
     @staticmethod
     def get_balances(wallet_address: str):
         """
-        Simulates fetching real-time token balances from the Solana blockchain.
-        In a production app, this would use the Solana RPC getTokenAccountsByOwner.
+        Fetches real SOL balance from Solana devnet via RPC.
+        Stablecoin/Umbra amounts are deterministic per-wallet for demo consistency
+        (real SPL token accounts require separate getTokenAccountsByOwner calls).
         """
-        # Deterministic seed based on address for "persistent" mocks
+        sol_balance = 0.0
+        is_live_sol = False
+
+        if wallet_address and wallet_address not in ('', 'System'):
+            try:
+                client = Client(WalletService.RPC_URL)
+                pubkey = Pubkey.from_string(wallet_address)
+                response = client.get_balance(pubkey)
+                sol_balance = response.value / 1_000_000_000  # lamports → SOL
+                is_live_sol = True
+            except Exception as e:
+                print(f"[WalletService] RPC balance fetch failed: {e}")
+
+        # Deterministic per-wallet seed for consistent stablecoin display
         seed = sum(ord(c) for c in (wallet_address or "default"))
-        random.seed(seed)
-        
-        tokens = [
-            {"token": "Solana", "symbol": "SOL", "amount": random.uniform(10, 500)},
-            {"token": "USD Coin", "symbol": "USDC", "amount": random.uniform(5000, 50000)},
-            {"token": "Tether", "symbol": "USDT", "amount": random.uniform(1000, 10000)},
-            {"token": "Umbra Protocol", "symbol": "UMBRA", "amount": random.uniform(100, 5000)},
-        ]
-        
-        # Simulated price data
+
         prices = {"SOL": 145.20, "USDC": 1.00, "USDT": 1.00, "UMBRA": 2.45}
-        
-        for t in tokens:
-            t["price"] = prices.get(t["symbol"], 0)
-            t["usdValue"] = t["amount"] * t["price"]
-            t["percentChange24h"] = random.uniform(-5, 10)
-            
+
+        tokens = [
+            {
+                "token": "Solana",
+                "symbol": "SOL",
+                "amount": round(sol_balance, 4),
+                "price": prices["SOL"],
+                "usdValue": round(sol_balance * prices["SOL"], 2),
+                "percentChange24h": 2.45,
+                "isLive": is_live_sol,
+            },
+            {
+                "token": "USD Coin",
+                "symbol": "USDC",
+                "amount": round((seed % 45000) + 5000, 2),
+                "price": prices["USDC"],
+                "usdValue": round((seed % 45000) + 5000, 2),
+                "percentChange24h": 0.01,
+                "isLive": False,
+            },
+            {
+                "token": "Tether",
+                "symbol": "USDT",
+                "amount": round((seed % 9000) + 1000, 2),
+                "price": prices["USDT"],
+                "usdValue": round((seed % 9000) + 1000, 2),
+                "percentChange24h": -0.02,
+                "isLive": False,
+            },
+            {
+                "token": "Umbra Protocol",
+                "symbol": "UMBRA",
+                "amount": round((seed % 4900) + 100, 2),
+                "price": prices["UMBRA"],
+                "usdValue": round(((seed % 4900) + 100) * prices["UMBRA"], 2),
+                "percentChange24h": 4.12,
+                "isLive": False,
+            },
+        ]
+
         return tokens

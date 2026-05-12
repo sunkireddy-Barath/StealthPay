@@ -7,6 +7,10 @@ from datetime import datetime
 import os
 from ..utils.supabase_sync import SupabaseSync
 
+def _claim_url(link_id: str) -> str:
+    site = os.getenv('SITE_URL', 'https://stealthpay.vercel.app').rstrip('/')
+    return f"{site}/pay/{link_id}"
+
 payment_links_bp = Blueprint('payment_links', __name__)
 
 @payment_links_bp.route('/', methods=['GET'])
@@ -24,7 +28,7 @@ def get_links():
         'created_at': l.created_at.isoformat(),
         'claimed_at': l.claimed_at.isoformat() if l.claimed_at else None,
         'claimed_by': l.claimed_by,
-        'link': f"https://stealthpay.io/pay/{l.id}"
+        'link': _claim_url(l.id)
     } for l in links]), 200
     
 @payment_links_bp.route('/<id>/info', methods=['GET'])
@@ -68,7 +72,7 @@ def create_link():
     return jsonify({
         'message': 'Payment link generated',
         'id': link.id,
-        'link': f"https://stealthpay.io/pay/{link.id}"
+        'link': _claim_url(link.id)
     }), 201
 
 @payment_links_bp.route('/<id>/claim', methods=['POST'])

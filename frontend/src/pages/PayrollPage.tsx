@@ -4,6 +4,7 @@ import {
   Users, Plus, Send, Trash2, Lock, CheckCircle,
   Building2, Wallet, DollarSign, X, Loader2, Shield
 } from 'lucide-react'
+import { useWallet } from '@solana/wallet-adapter-react'
 import { AppLayout } from '../components/layout/AppLayout'
 import { useAppStore } from '../store'
 import { truncateAddress, formatAmount } from '../lib/utils'
@@ -161,13 +162,15 @@ function AddEmployeeModal({ onClose }: { onClose: () => void }) {
 
 function RunPayrollModal({ employees, onClose }: { employees: Employee[], onClose: () => void }) {
   const { runPayroll, isProcessingPayroll } = useAppStore()
+  const wallet = useWallet()
   const [selected, setSelected] = useState<string[]>(employees.filter(e => e.status === 'active').map(e => e.id))
   const totalAmount = employees.filter(e => selected.includes(e.id)).reduce((acc, e) => acc + e.salary, 0)
   const [step, setStep] = useState<'select' | 'confirm' | 'processing' | 'done'>('select')
 
   const handleRun = async () => {
     setStep('processing')
-    await runPayroll(selected)
+    // Pass the live wallet adapter so UmbraService can use it for signing
+    await runPayroll(selected, wallet)
     setStep('done')
   }
 
@@ -371,6 +374,13 @@ export default function PayrollPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
+                {filteredEmployees.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="py-14 text-center text-zinc-500 text-sm font-medium">
+                      No employees yet. Click "Add Employee" to get started.
+                    </td>
+                  </tr>
+                )}
                 <AnimatePresence>
                   {filteredEmployees.map((emp, i) => (
                     <motion.tr

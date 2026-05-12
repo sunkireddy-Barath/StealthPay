@@ -139,6 +139,7 @@ function LinkCard({ link }: { link: PaymentLink }) {
           {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4 text-violet-400" />}
         </motion.button>
         <motion.button whileTap={{ scale: 0.9 }}
+          onClick={() => window.open(link.link, '_blank', 'noopener,noreferrer')}
           className="p-2 rounded-xl transition-colors"
           style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
           <ExternalLink className="w-4 h-4 text-zinc-400" />

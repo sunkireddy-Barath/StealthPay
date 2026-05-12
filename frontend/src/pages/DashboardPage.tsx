@@ -282,6 +282,13 @@ export default function DashboardPage() {
               Private
             </span>
           </div>
+          {transactionsList.length === 0 && (
+            <div className="py-14 text-center">
+              <Lock className="w-8 h-8 text-zinc-700 mx-auto mb-3" />
+              <p className="text-sm text-zinc-500 font-medium">No transactions yet</p>
+              <p className="text-xs text-zinc-600 mt-1">Run payroll, create an invoice, or generate a payment link to get started.</p>
+            </div>
+          )}
           <div className="divide-y divide-white/5">
             {transactionsList.slice(0, 5).map((tx, i) => (
               <motion.div
