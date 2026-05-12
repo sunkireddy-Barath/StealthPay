@@ -1,11 +1,19 @@
 import os
-from supabase import create_client
+
+try:
+    from supabase import create_client
+    _SUPABASE_AVAILABLE = True
+except ImportError:
+    _SUPABASE_AVAILABLE = False
+
 
 class SupabaseSync:
     _client = None
 
     @classmethod
     def get_client(cls):
+        if not _SUPABASE_AVAILABLE:
+            return None
         if cls._client is None:
             url = os.environ.get("SUPABASE_URL")
             key = os.environ.get("SUPABASE_KEY")
@@ -18,7 +26,6 @@ class SupabaseSync:
         client = cls.get_client()
         if client:
             try:
-                # Use upsert if 'id' is provided, otherwise insert
                 if 'id' in data:
                     return client.table(table_name).upsert(data).execute()
                 else:

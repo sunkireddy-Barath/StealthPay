@@ -15,6 +15,9 @@ def create_app():
     db_url = os.getenv('DATABASE_URL', 'sqlite:///stealthpay.db')
     if db_url.startswith("postgres://"):
         db_url = db_url.replace("postgres://", "postgresql://", 1)
+    # Use pg8000 driver (pure Python, no compilation needed)
+    if db_url.startswith("postgresql://") and "+pg8000" not in db_url:
+        db_url = db_url.replace("postgresql://", "postgresql+pg8000://", 1)
     app.config['SQLALCHEMY_DATABASE_URI'] = db_url
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'stealth-jwt-secret-fallback')

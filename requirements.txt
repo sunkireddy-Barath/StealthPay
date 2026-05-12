@@ -2,9 +2,9 @@ Flask==3.0.2
 Flask-SQLAlchemy==3.1.1
 Flask-JWT-Extended==4.6.0
 Flask-Cors==4.0.0
-psycopg2-binary
+pg8000==1.31.2
 python-dotenv==1.0.1
 base58==2.1.1
 marshmallow==3.21.1
-cryptography
+cryptography==42.0.5
 supabase>=2.0.0
