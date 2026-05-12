@@ -16,21 +16,14 @@ const FEATURES = [
 export default function AuthPage() {
   const navigate = useNavigate()
   const { connected, publicKey } = useWallet()
-  const { authenticateWallet, isAuthenticated } = useAppStore()
+  const { authenticateWallet } = useAppStore()
 
-  // Authenticate against backend the moment wallet connects
   useEffect(() => {
     if (connected && publicKey) {
       authenticateWallet(publicKey.toBase58())
-    }
-  }, [connected, publicKey, authenticateWallet])
-
-  // Navigate to dashboard once auth token is stored
-  useEffect(() => {
-    if (isAuthenticated) {
       navigate('/dashboard', { replace: true })
     }
-  }, [isAuthenticated, navigate])
+  }, [connected, publicKey])
 
   return (
     <div className="min-h-screen bg-[#08080F] flex flex-col items-center justify-center p-6 relative overflow-hidden">
