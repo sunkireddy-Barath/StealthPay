@@ -448,6 +448,19 @@ export const useAppStore = create<AppState>()(
       // ── Auth ──────────────────────────────────────────────────────────────
 
       authenticateWallet: async (address: string) => {
+        // Authenticate immediately from wallet — Web3 identity is the wallet
+        set({
+          user: {
+            id: address,
+            email: '',
+            walletAddress: address,
+            companyName: 'Merchant',
+            createdAt: new Date().toISOString(),
+          },
+          isWalletConnected: true,
+          isAuthenticated: true,
+        })
+        // Sync with backend in background to get JWT + full user profile
         try {
           const res = await apiFetch('/api/auth/wallet-login', {
             method: 'POST',
@@ -456,11 +469,7 @@ export const useAppStore = create<AppState>()(
           if (res.ok) {
             const data = await res.json()
             localStorage.setItem('stealthpay_token', data.access_token)
-            set({
-              user: data.user,
-              isWalletConnected: true,
-              isAuthenticated: true,
-            })
+            set({ user: data.user, isWalletConnected: true, isAuthenticated: true })
           }
         } catch (e) {
           console.error('[authenticateWallet]', e)
