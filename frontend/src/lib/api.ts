@@ -16,5 +16,13 @@ export async function apiFetch(path: string, options?: RequestInit): Promise<Res
   }
   if (token) headers['Authorization'] = `Bearer ${token}`
 
-  return fetch(apiUrl(path), { ...options, headers })
+  try {
+    return await fetch(apiUrl(path), { ...options, headers })
+  } catch {
+    // Return a fake 503 response so callers get res.ok === false instead of an unhandled throw
+    return new Response(JSON.stringify({ error: 'Backend offline — run: npm run start-backend' }), {
+      status: 503,
+      headers: { 'Content-Type': 'application/json' },
+    })
+  }
 }

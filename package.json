@@ -2,9 +2,10 @@
   "name": "stealthpay-monorepo",
   "private": true,
   "scripts": {
-    "install-all": "npm install --prefix frontend && pip install -r backend/requirements.txt",
-    "build-frontend": "npm run build --prefix frontend",
+    "dev": "bash dev.sh",
+    "install-all": "npm install --prefix frontend && pip install -r requirements.txt --break-system-packages 2>/dev/null || (python3 -m venv .venv && .venv/bin/pip install -r requirements.txt)",
+    "setup-venv": "python3 -m venv .venv && .venv/bin/pip install -r requirements.txt",
     "start-frontend": "npm run dev --prefix frontend",
-    "start-backend": "python backend/run.py"
+    "start-backend": "bash -c 'source .venv/bin/activate 2>/dev/null || true; python backend/run.py'"
   }
 }

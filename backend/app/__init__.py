@@ -8,16 +8,41 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+def _resolve_db_url():
+    """Return the database URL to use, falling back to SQLite if Postgres is unreachable."""
+    raw = os.getenv('DATABASE_URL', '')
+    if not raw:
+        return 'sqlite:///stealthpay.db', False
+
+    # Normalise scheme
+    if raw.startswith("postgres://"):
+        raw = raw.replace("postgres://", "postgresql://", 1)
+
+    if not (raw.startswith("postgresql://") or raw.startswith("postgresql+")):
+        return raw, False
+
+    # Ensure pg8000 driver
+    if "+pg8000" not in raw:
+        raw = raw.replace("postgresql://", "postgresql+pg8000://", 1)
+
+    # Probe the connection before committing to it
+    try:
+        from sqlalchemy import create_engine, text
+        probe = create_engine(raw, connect_args={'ssl_context': True}, pool_pre_ping=True)
+        with probe.connect() as conn:
+            conn.execute(text("SELECT 1"))
+        probe.dispose()
+        return raw, True
+    except Exception as e:
+        print(f"[DB] PostgreSQL unreachable — {e}\n[DB] Falling back to SQLite.")
+        return 'sqlite:///stealthpay.db', False
+
+
 def create_app():
     app = Flask(__name__)
 
-    # ── Database ──────────────────────────────────────────────────────────────
-    db_url = os.getenv('DATABASE_URL', 'sqlite:///stealthpay.db')
-    if db_url.startswith("postgres://"):
-        db_url = db_url.replace("postgres://", "postgresql://", 1)
-    is_postgres = db_url.startswith("postgresql://") or db_url.startswith("postgresql+")
-    if is_postgres and "+pg8000" not in db_url:
-        db_url = db_url.replace("postgresql://", "postgresql+pg8000://", 1)
+    db_url, is_postgres = _resolve_db_url()
+
     app.config['SQLALCHEMY_DATABASE_URI'] = db_url
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     if is_postgres:
@@ -32,17 +57,14 @@ def create_app():
     db.init_app(app)
 
     cors_origins_raw = os.getenv('CORS_ORIGINS', '*')
-    if cors_origins_raw == '*':
-        allowed_origins = '*'
-    else:
-        allowed_origins = [o.strip() for o in cors_origins_raw.split(',')]
+    allowed_origins = '*' if cors_origins_raw == '*' else [o.strip() for o in cors_origins_raw.split(',')]
     CORS(app, origins=allowed_origins, supports_credentials=True)
 
     JWTManager(app)
 
     with app.app_context():
-        db.create_all()          # Creates missing tables (safe to run repeatedly)
-        _run_migrations(db)      # Adds new columns to existing tables
+        db.create_all()
+        _run_migrations(db)
 
     # ── Blueprints ────────────────────────────────────────────────────────────
     from .api.auth import auth_bp
@@ -63,41 +85,32 @@ def create_app():
 
     @app.route('/api/health')
     def health():
-        return {'status': 'healthy', 'service': 'stealthpay-backend', 'version': '2.0'}
+        dialect = db.engine.dialect.name
+        return {'status': 'healthy', 'service': 'stealthpay-backend', 'version': '2.0', 'db': dialect}
 
     return app
 
 
 def _run_migrations(db):
-    """
-    Applies additive schema changes to existing databases.
-    Safe to run on every startup — all statements use IF NOT EXISTS / similar guards.
-    """
     from sqlalchemy import text, inspect
 
-    dialect = db.engine.dialect.name   # 'postgresql' or 'sqlite'
-
+    dialect = db.engine.dialect.name
     migrations = []
 
     if dialect == 'postgresql':
-        # PostgreSQL supports IF NOT EXISTS on ADD COLUMN (PG 9.6+)
         migrations = [
             "ALTER TABLE transactions ADD COLUMN IF NOT EXISTS creator_id VARCHAR(36)",
             "ALTER TABLE transactions ALTER COLUMN encrypted_amount TYPE VARCHAR(512)",
         ]
     else:
-        # SQLite: check via inspect then add if missing
         inspector = inspect(db.engine)
         tx_cols = [c['name'] for c in inspector.get_columns('transactions')]
         if 'creator_id' not in tx_cols:
-            migrations = [
-                "ALTER TABLE transactions ADD COLUMN creator_id VARCHAR(36)"
-            ]
+            migrations = ["ALTER TABLE transactions ADD COLUMN creator_id VARCHAR(36)"]
 
     with db.engine.begin() as conn:
         for stmt in migrations:
             try:
                 conn.execute(text(stmt))
             except Exception as e:
-                # Non-fatal — column may already exist or type already matches
                 print(f"[Migration] Skipped: {stmt[:60]}... ({e})")
